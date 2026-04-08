@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>HunterTent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="game-app">
+        <!-- Minimal HUD -->
+        <div class="game-hud">
+            <div class="hud-left">
+                <h1 class="game-title">HunterTent</h1>
+            </div>
+            <div class="hud-right">
+                <div class="currency"><span id="money-display">0</span>$</div>
+            </div>
+        </div>
+
+        <div id="game-viewport">
+            <div id="world">
+                <div id="objects-layer"></div>
+                <div id="entities-layer">
+                    <div id="player" class="player-container">
+                        <div class="rider"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="game-toast"></div>
+        </div>
+
+        <!-- Ghost Mobile Controls -->
+        <div id="mobile-controls" class="mobile-only">
+            <div class="dpad">
+                <button id="btn-left" class="ctrl-btn">◀</button>
+                <button id="btn-right" class="ctrl-btn">▶</button>
+            </div>
+        </div>
+
+        <!-- Store Modal (Fully hidden UI) -->
+        <div id="store-modal" class="modal hidden">
+            <div class="modal-content">
+                <div id="store-items" class="store-grid"></div>
+                <button class="close-btn">BACK</button>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

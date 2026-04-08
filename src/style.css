@@ -1,0 +1,95 @@
+:root {
+  --bg-color: #0d0b21;
+  --accent-primary: #7c4dff;
+  --text-primary: #e0e0e0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+
+body {
+  background-color: #000;
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  overflow: hidden;
+  height: 100vh; width: 100vw;
+  display: flex; justify-content: center; align-items: center;
+}
+
+#game-app {
+  width: 960px; height: 640px; display: flex; flex-direction: column;
+  background: #000; position: relative; overflow: hidden;
+}
+
+@media (max-width: 1024px) {
+  #game-app { width: 100vw; height: 100vh; }
+}
+
+.game-hud {
+  position: absolute; top: 0; left: 0; width: 100%;
+  padding: 15px 25px; display: flex; justify-content: space-between; z-index: 1000;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+  pointer-events: none;
+}
+
+.game-title {
+  font-family: 'Playfair Display', serif; font-size: 1.2rem;
+  background: linear-gradient(135deg, #fff, #7c4dff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+.currency { color: #4caf50; font-size: 1.2rem; font-weight: 700; }
+
+#game-viewport { 
+  flex-grow: 1; position: relative; overflow: hidden; touch-action: none; 
+  height: 100%; width: 100%;
+}
+
+#world { 
+  position: absolute; top: 0; left: 0; height: 100%; 
+  background-size: cover; /* ENSURE FULL VERTICAL/HORIZONTAL FILL */
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  transition: transform 0.1s linear;
+}
+
+/* Entities */
+.player-container {
+  position: absolute; bottom: 34.5%; width: 128px; height: 128px;
+  z-index: 100; transform: translateX(-50%); 
+}
+.rider {
+  width: 128px; height: 128px; background-size: 1024px 128px;
+  background-repeat: no-repeat; image-rendering: pixelated;
+}
+.player-container:not(.moving) .rider { background-image: url('./assets/player/Idle.png'); animation: sprite-cycle 1.2s steps(8) infinite; }
+.player-container.moving .rider { background-image: url('./assets/player/Run.png'); animation: sprite-cycle 0.6s steps(8) infinite; }
+@keyframes sprite-cycle { from { background-position: 0px 0px; } to { background-position: -1024px 0px; } }
+
+.player-cabin {
+  position: absolute; bottom: 31%; width: 260px; height: 190px; 
+  background-image: url('./assets/world/cabana.png');
+  background-size: contain; background-repeat: no-repeat;
+  z-index: 9;
+}
+
+/* CLEAN GHOST CONTROLS */
+#mobile-controls {
+  position: absolute; bottom: 40px; left: 40px; z-index: 2000; pointer-events: none;
+}
+.dpad { display: flex; gap: 30px; pointer-events: auto; }
+.ctrl-btn {
+  width: 80px; height: 80px; border-radius: 50%; opacity: 0.15;
+  border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.05);
+  color: white; font-size: 1.5rem; display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.2s;
+}
+.ctrl-btn:active { opacity: 0.6; }
+
+@media (min-width: 1025px) { #mobile-controls { display: none; } }
+
+.modal { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: flex; justify-content: center; align-items: center; }
+.hidden { display: none !important; }
+.modal-content { background: #1a1a2e; width: 80%; padding: 30px; border-radius: 12px; text-align: center; }
+.close-btn { background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 4px; margin-top: 20px; }
+.notification { position: absolute; top: 80px; right: 20px; background: rgba(0,0,0,0.8); border-left: 4px solid var(--accent-primary); padding: 10px 20px; border-radius: 4px; z-index: 3000; font-size: 0.8rem; }
