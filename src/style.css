@@ -63,19 +63,35 @@ body {
 .player-container, .npc {
   position: absolute; bottom: 34.5%; width: 160px; height: 160px;
   z-index: 100; transform: translateX(-50%); 
+  pointer-events: none;
 }
 
 .rider, .npc-idle {
-  width: 160px; height: 160px; image-rendering: pixelated;
+  width: 160px; height: 160px; 
+  image-rendering: pixelated;
   background-repeat: no-repeat;
+  background-position: 0 0;
 }
 
-.player-container:not(.moving) .rider { background-image: url('./assets/player/Idle.png'); animation: sprite-cycle 1.2s steps(8) infinite; }
-.player-container.moving .rider { background-image: url('./assets/player/Run.png'); animation: sprite-cycle 0.6s steps(8) infinite; }
-@keyframes sprite-cycle { from { background-position: 0px 0px; } to { background-position: -1280px 0px; } }
+/* FIXING SPRITE LEAK: Use background-size calculated for 160px frames */
+.player-container:not(.moving) .rider { 
+  background-image: url('./assets/player/Idle.png'); 
+  background-size: 1280px 160px;
+  animation: sprite-idle 1.2s steps(8) infinite; 
+}
+.player-container.moving .rider { 
+  background-image: url('./assets/player/Run.png'); 
+  background-size: 1280px 160px;
+  animation: sprite-run 0.6s steps(8) infinite; 
+}
 
+@keyframes sprite-idle { from { background-position: 0px 0px; } to { background-position: -1280px 0px; } }
+@keyframes sprite-run { from { background-position: 0px 0px; } to { background-position: -1280px 0px; } }
+
+/* NPC - 6 FRAMES */
 .npc-idle {
-  background-image: url('./assets/npc/Idle.png'); background-size: 960px 160px;
+  background-image: url('./assets/npc/Idle.png'); 
+  background-size: 960px 160px; /* 160 * 6 = 960 */
   animation: npc-idle-anim 1.2s steps(6) infinite;
 }
 @keyframes npc-idle-anim { from { background-position: 0px 0px; } to { background-position: -960px 0px; } }
