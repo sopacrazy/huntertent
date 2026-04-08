@@ -11,6 +11,11 @@ class Game {
         this.keys = {};
         this.initialized = false;
         
+        // INTERACTION STATE
+        this.npcPos = 0; 
+        this.isDialogueOpen = false;
+        this.nearNPC = false;
+
         this.joystick = {
             active: false,
             originX: 0, originY: 0,
@@ -26,7 +31,9 @@ class Game {
             objs: document.getElementById('objects-layer'),
             moneyDisplay: document.getElementById('money-display'),
             joyWrapper: document.getElementById('joystick-wrapper'),
-            joyStick: document.getElementById('joystick-stick')
+            joyStick: document.getElementById('joystick-stick'),
+            actionBtn: document.getElementById('action-btn-wrapper'),
+            dialogueBox: document.getElementById('dialogue-box')
         };
         
         this.init();
@@ -45,12 +52,11 @@ class Game {
         const bgImg = new Image();
         bgImg.src = lugarBg;
         bgImg.onload = () => {
-            const h = this.els.app.clientHeight; // Use app height instead of window
+            const h = this.els.app.clientHeight;
             const ar = bgImg.width / bgImg.height;
             this.worldWidth = h * ar;
             this.els.world.style.width = `${this.worldWidth}px`;
             this.buildObjects();
-            
             this.updateCamera(); 
             
             setTimeout(() => {
@@ -61,17 +67,25 @@ class Game {
     }
     
     setupEventListeners() {
-        window.addEventListener('keydown', e => { this.keys[e.code] = true; });
+        window.addEventListener('keydown', e => { 
+            this.keys[e.code] = true; 
+            if (e.code === 'KeyE') this.tryInteract();
+        });
         window.addEventListener('keyup', e => this.keys[e.code] = false);
 
-        const lockOrientation = () => {
-            if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock('landscape').catch(() => {});
-            }
-        };
+        // ACTION BUTTON (Mobile)
+        this.els.actionBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.tryInteract();
+        });
+
+        // DIALOGUE DISMISS
+        this.els.dialogueBox.addEventListener('touchstart', () => {
+            if (this.isDialogueOpen) this.closeDialogue();
+        });
 
         const startJoy = (e) => {
-            lockOrientation();
+            if (this.isDialogueOpen) return;
             const touch = e.touches ? e.touches[0] : e;
             const rect = document.getElementById('joystick-base').getBoundingClientRect();
             this.joystick.originX = rect.left + rect.width / 2;
@@ -80,7 +94,7 @@ class Game {
         };
 
         const moveJoy = (e) => {
-            if (!this.joystick.active) return;
+            if (!this.joystick.active || this.isDialogueOpen) return;
             e.preventDefault();
             const touch = e.touches ? e.touches[0] : e;
             let dx = touch.clientX - this.joystick.originX;
@@ -116,28 +130,50 @@ class Game {
         window.addEventListener('mousemove', moveJoy);
         window.addEventListener('mouseup', stopJoy);
     }
+
+    tryInteract() {
+        if (this.isDialogueOpen) {
+            this.closeDialogue();
+        } else if (this.nearNPC) {
+            this.openDialogue();
+        }
+    }
+
+    openDialogue() {
+        this.isDialogueOpen = true;
+        this.els.dialogueBox.classList.remove('hidden');
+        this.velocity = 0;
+        this.keys = {}; // Stop all movement
+    }
+
+    closeDialogue() {
+        this.isDialogueOpen = false;
+        this.els.dialogueBox.classList.add('hidden');
+    }
     
     buildObjects() {
         this.els.objs.innerHTML = '';
-        
-        // CABIN
         const cabinX = 780; 
         const cabin = document.createElement('div');
         cabin.className = 'player-cabin';
         cabin.style.left = `${cabinX - 130}px`; 
         this.els.objs.appendChild(cabin);
 
-        // NPC VENDEDOR (At the end of the map)
-        const npcX = this.worldWidth - 500;
+        // NPC
+        this.npcPos = this.worldWidth - 500;
         const npc = document.createElement('div');
         npc.className = 'npc';
-        npc.style.left = `${npcX}px`;
-        npc.innerHTML = `<div class="npc-idle" style="transform: scaleX(-1)"></div>`; // Facing left
+        npc.id = 'npc-vendedor';
+        npc.style.left = `${this.npcPos}px`;
+        npc.innerHTML = `
+            <div class="npc-idle" style="transform: scaleX(-1)"></div>
+            <div id="npc-prompt" class="interact-prompt hidden">E</div>
+        `;
         this.els.objs.appendChild(npc);
     }
 
     updateCamera() {
-        const vw = this.els.app.clientWidth; // Use container width for camera
+        const vw = this.els.app.clientWidth;
         let camX = this.playerPos - vw / 2;
         const maxCamX = Math.max(0, this.worldWidth - vw);
         camX = Math.max(0, Math.min(camX, maxCamX));
@@ -150,9 +186,24 @@ class Game {
             return;
         }
 
+        // PROXIMITY CHECK
+        const dist = Math.abs(this.playerPos - this.npcPos);
+        const prompt = document.getElementById('npc-prompt');
+        if (dist < 150) {
+            this.nearNPC = true;
+            if (prompt) prompt.classList.remove('hidden');
+            this.els.actionBtn.classList.remove('hidden');
+        } else {
+            this.nearNPC = false;
+            if (prompt) prompt.classList.add('hidden');
+            this.els.actionBtn.classList.add('hidden');
+        }
+
         let dir = 0;
-        if (this.keys.ArrowRight || this.keys.KeyD) dir += 1;
-        if (this.keys.ArrowLeft || this.keys.KeyA) dir -= 1;
+        if (!this.isDialogueOpen) {
+            if (this.keys.ArrowRight || this.keys.KeyD) dir += 1;
+            if (this.keys.ArrowLeft || this.keys.KeyA) dir -= 1;
+        }
         
         if (dir !== 0) {
             this.velocity = dir * this.walkSpeed;
@@ -164,15 +215,15 @@ class Game {
             this.els.player.classList.remove('moving');
         }
         
-        this.playerPos += this.velocity;
-        const margin = 50;
-        if (this.playerPos < margin) this.playerPos = margin;
-        if (this.playerPos > this.worldWidth - margin) this.playerPos = this.worldWidth - margin;
-        
-        this.els.player.style.left = `${this.playerPos}px`;
+        if (!this.isDialogueOpen) {
+            this.playerPos += this.velocity;
+            const margin = 50;
+            if (this.playerPos < margin) this.playerPos = margin;
+            if (this.playerPos > this.worldWidth - margin) this.playerPos = this.worldWidth - margin;
+            this.els.player.style.left = `${this.playerPos}px`;
+        }
+
         this.updateCamera();
-        
-        if(this.els.moneyDisplay) this.els.moneyDisplay.innerText = "0";
         requestAnimationFrame(() => this.gameLoop());
     }
 }

@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- ORIENTATION RESTRAINT -->
     <div id="orientation-blocker">
         <div class="blocker-content">
             <div class="rotate-icon">🔄</div>
@@ -18,35 +17,42 @@
     </div>
 
     <div id="game-app">
-        <!-- Minimal HUD -->
         <div class="game-hud">
-            <div class="hud-left">
-                <h1 class="game-title">HunterTent</h1>
-            </div>
-            <div class="hud-right">
-                <div class="currency"><span id="money-display">0</span>$</div>
-            </div>
+            <div class="hud-left"><h1 class="game-title">HunterTent</h1></div>
+            <div class="hud-right"><div class="currency"><span id="money-display">0</span>$</div></div>
         </div>
 
         <div id="game-viewport">
             <div id="world">
                 <div id="objects-layer"></div>
                 <div id="entities-layer">
-                    <div id="player" class="player-container">
-                        <div class="rider"></div>
-                    </div>
+                    <div id="player" class="player-container"><div class="rider"></div></div>
                 </div>
             </div>
         </div>
 
-        <!-- VIRTUAL JOYSTICK -->
-        <div id="joystick-wrapper">
-            <div id="joystick-base">
-                <div id="joystick-stick"></div>
+        <!-- DIALOGUE SYSTEM -->
+        <div id="dialogue-box" class="hidden">
+            <div class="dialogue-content">
+                <span class="speaker-name">VENDEDOR</span>
+                <p id="dialogue-text">Olá caçador! Gostaria de ver minhas mercadorias?</p>
+                <div class="dialogue-footer">Aperte [E] ou toque para fechar</div>
             </div>
         </div>
 
-        <!-- Hidden Components -->
+        <!-- CONTROLS -->
+        <div id="joystick-wrapper">
+            <div id="joystick-base"><div id="joystick-stick"></div></div>
+        </div>
+
+        <!-- MOBILE ACTION BUTTON -->
+        <div id="action-btn-wrapper" class="hidden">
+            <div id="action-btn">
+                <span class="key-hint">E</span>
+                <span class="label">AÇÃO</span>
+            </div>
+        </div>
+
         <div id="store-modal" class="hidden"></div>
     </div>
     <script type="module" src="/src/main.js"></script>
