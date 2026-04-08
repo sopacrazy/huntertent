@@ -1,6 +1,7 @@
 :root {
   --accent-primary: #7c4dff;
   --text-primary: #e0e0e0;
+  --game-height: 640px; /* Internal fixed height */
 }
 
 * { 
@@ -11,41 +12,48 @@
 }
 
 body {
-  background-color: #000;
+  background-color: #0b0a1a;
   color: var(--text-primary);
   font-family: 'Outfit', sans-serif;
   overflow: hidden;
-  height: 100dvh; 
-  width: 100vw;
+  height: 100dvh; width: 100vw;
   display: flex; justify-content: center; align-items: center;
 }
 
+/* THE CONTAINER NOW MAINTAINS ASPECT RATIO OR SCALES UNIFORMLY */
 #game-app {
-  width: 100%; height: 100%; 
-  max-width: 960px; max-height: 640px;
-  background: #000; position: relative; overflow: hidden;
+  width: 100%; 
+  height: var(--game-height);
+  position: relative; overflow: hidden;
+  background: #000;
+  box-shadow: 0 0 100px rgba(0,0,0,0.5);
 }
 
+/* On mobile, we might want to scale the entire app to fit the screen width but keep internal 640px height logic */
 @media (max-width: 1024px) {
-  #game-app { max-width: none; max-height: none; height: 100dvh; }
+  #game-app {
+    /* We keep height fixed to ensure 'bottom: px' logic works, 
+       any extra screen height will be black padding (letterbox) */
+    border-top: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
 }
 
 .game-hud {
   position: absolute; top: 0; left: 0; width: 100%;
-  padding: env(safe-area-inset-top, 15px) 25px; 
+  padding: 20px 25px; 
   display: flex; justify-content: space-between; z-index: 1000;
   background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
   pointer-events: none;
 }
 
 .game-title {
-  font-family: 'Playfair Display', serif; 
-  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  font-family: 'Playfair Display', serif; font-size: 1.5rem;
   background: linear-gradient(135deg, #fff, #7c4dff);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
 
-.currency { color: #4caf50; font-size: clamp(1rem, 4vw, 1.4rem); font-weight: 700; }
+.currency { color: #4caf50; font-size: 1.4rem; font-weight: 700; }
 
 #game-viewport { position: absolute; inset: 0; overflow: hidden; }
 
@@ -58,55 +66,27 @@ body {
   transition: transform 0.05s linear;
 }
 
-/* PLAYER & RIDER RESTORATION */
+/* ENTITIES USE THE SAME GROUND LEVEL MATH */
 .player-container {
-  position: absolute; bottom: 34.5%; width: 128px; height: 128px;
+  position: absolute; 
+  bottom: 220px; /* FIXED PIXEL POSITION relative to 640px height */
+  width: 128px; height: 128px;
   z-index: 100; transform: translateX(-50%); 
 }
 
 .rider {
-  width: 128px; height: 128px; 
-  background-size: 1024px 128px;
-  background-repeat: no-repeat; 
-  image-rendering: pixelated;
+  width: 128px; height: 128px; background-size: 1024px 128px;
+  background-repeat: no-repeat; image-rendering: pixelated;
 }
+.player-container:not(.moving) .rider { background-image: url('./assets/player/Idle.png'); animation: sprite-cycle 1.2s steps(8) infinite; }
+.player-container.moving .rider { background-image: url('./assets/player/Run.png'); animation: sprite-cycle 0.6s steps(8) infinite; }
+@keyframes sprite-cycle { from { background-position: 0px 0px; } to { background-position: -1024px 0px; } }
 
-/* Animation cycles */
-.player-container:not(.moving) .rider { 
-  background-image: url('./assets/player/Idle.png'); 
-  animation: sprite-cycle 1.2s steps(8) infinite; 
-}
-.player-container.moving .rider { 
-  background-image: url('./assets/player/Run.png'); 
-  animation: sprite-cycle 0.6s steps(8) infinite; 
-}
-
-@keyframes sprite-cycle { 
-  from { background-position: 0px 0px; } 
-  to { background-position: -1024px 0px; } 
-}
-
-/* ANIMALS & ENTITIES RESTORATION */
-.entity {
-  position: absolute; width: 64px; height: 64px;
-  background-size: contain; background-repeat: no-repeat;
-  image-rendering: pixelated; z-index: 50;
-  transform: translateX(-50%);
-  transition: opacity 0.5s;
-}
-
-.skunk { background-image: url('./assets/world/cabana.png'); opacity: 0.6; width: 40px; height: 40px; } /* Temporary visuals if sprites missing */
-
-/* HP BARS for future use */
-.hp-bar { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 30px; height: 4px; background: rgba(0,0,0,0.5); border-radius: 2px; overflow: hidden; }
-.hp-fill { height: 100%; background: #ff5252; transition: width 0.3s; }
-
-/* PROJECTILES */
-.projectile { position: absolute; width: 15px; height: 4px; background: #fff; box-shadow: 0 0 10px var(--accent-primary); border-radius: 2px; z-index: 200; }
-
-/* CABIN */
+/* CABIN IS NOW FIXED IN PIXELS */
 .player-cabin {
-  position: absolute; bottom: 33%; width: 260px; height: 190px; 
+  position: absolute; 
+  bottom: 220px; /* FIXED PIXEL POSITION - matches the art ground exactly */
+  width: 260px; height: 190px; 
   background-image: url('./assets/world/cabana.png');
   background-size: contain; background-repeat: no-repeat;
   z-index: 9;
@@ -114,18 +94,16 @@ body {
 
 /* MOBILE CONTROLS */
 #mobile-controls {
-  position: absolute; bottom: env(safe-area-inset-bottom, 20px); 
-  left: 20px; z-index: 2000; pointer-events: none;
+  position: absolute; bottom: 30px; left: 30px; z-index: 2000; pointer-events: none;
 }
-.dpad { display: flex; gap: 40px; pointer-events: auto; }
+.dpad { display: flex; gap: 30px; pointer-events: auto; }
 .ctrl-btn {
-  width: 90px; height: 90px; border-radius: 50%; opacity: 0.25;
-  border: 2px solid rgba(255,255,255,0.4); 
-  background: rgba(0,0,0,0.3);
-  color: white; font-size: 2.5rem; display: flex; align-items: center; justify-content: center;
+  width: 80px; height: 80px; border-radius: 50%; opacity: 0.25;
+  border: 1px solid rgba(255,255,255,0.4); background: rgba(0,0,0,0.3);
+  color: white; font-size: 2rem; display: flex; align-items: center; justify-content: center;
 }
-.ctrl-btn:active { opacity: 0.8; background: var(--accent-primary); border-color: white; transform: scale(1.1); }
+.ctrl-btn:active { opacity: 0.8; background: var(--accent-primary); transform: scale(1.1); }
 
 @media (min-width: 1025px) { #mobile-controls { display: none; } }
 
-.notification { position: absolute; top: 80px; right: 20px; background: rgba(0,0,0,0.9); border-left: 4px solid var(--accent-primary); padding: 12px 24px; border-radius: 6px; z-index: 3000; font-size: 0.9rem; }
+.notification { position: absolute; top: 100px; right: 20px; background: rgba(0,0,0,0.9); border-left: 4px solid var(--accent-primary); padding: 12px 24px; border-radius: 6px; z-index: 3000; font-size: 0.9rem; }

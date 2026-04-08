@@ -7,7 +7,6 @@ class Game {
         this.playerPos = 650; 
         this.velocity = 0;
         this.walkSpeed = 6; 
-        this.groundLevel = 34.5;
         this.facing = 1;
         this.entities = []; 
         this.keys = {};
@@ -60,41 +59,28 @@ class Game {
     }
     
     buildObjects() {
-        // Clear objects but keep the player in entities
         this.els.objs.innerHTML = '';
         
-        // Remove only animals, keep player
+        // Remove everything but player
         const existingEntities = this.els.ents.querySelectorAll('.entity:not(.player-container)');
         existingEntities.forEach(e => e.remove());
         this.entities = [];
         
-        // RE-APPEND PLAYER AS SAFETY
         if (this.els.player && !this.els.ents.contains(this.els.player)) {
             this.els.ents.appendChild(this.els.player);
         }
 
-        const cabinX = 650; 
+        const cabinX = 1070; 
         const cabin = document.createElement('div');
         cabin.className = 'player-cabin';
         cabin.style.left = `${cabinX - 130}px`; 
         this.els.objs.appendChild(cabin);
-        
-        for(let i=0; i<8; i++) this.spawnAnimal(Math.random() * (this.worldWidth - 500) + 400);
     }
     
-    spawnAnimal(x) {
-        const el = document.createElement('div');
-        el.className = `entity skunk`;
-        el.style.left = `${x}px`;
-        el.style.bottom = `${this.groundLevel}%`;
-        this.els.ents.appendChild(el);
-        this.entities.push({ el, x, vx: (Math.random() - 0.5) * 2 });
-    }
-
     gameLoop() {
         let dir = 0;
-        if (this.keys.ArrowRight || this.keys.KeyD || this.keys.right) dir += 1;
-        if (this.keys.ArrowLeft || this.keys.KeyA || this.keys.left) dir -= 1;
+        if (this.keys.ArrowRight || this.keys.KeyD) dir += 1;
+        if (this.keys.ArrowLeft || this.keys.KeyA) dir -= 1;
         
         if (dir !== 0) {
             this.velocity = dir * this.walkSpeed;
@@ -113,12 +99,6 @@ class Game {
         
         if (this.els.player) {
             this.els.player.style.left = `${this.playerPos}px`;
-        }
-
-        for (let ent of this.entities) {
-            ent.x += ent.vx;
-            if (ent.x < 100 || ent.x > this.worldWidth - 100) ent.vx *= -1;
-            ent.el.style.left = `${ent.x}px`;
         }
 
         const vw = window.innerWidth;
