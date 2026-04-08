@@ -18,10 +18,9 @@ body {
   height: 100dvh; width: 100vw;
 }
 
-/* ORIENTATION BLOCKER: Only shows in Portrait */
 #orientation-blocker {
   position: fixed; inset: 0; background: #0b0a1a;
-  z-index: 10000; display: none; /* Hidden by default */
+  z-index: 10000; display: none; 
   flex-direction: column; align-items: center; justify-content: center;
   text-align: center; color: white; padding: 20px;
 }
@@ -62,9 +61,11 @@ body {
   background-position: left bottom;
   background-repeat: no-repeat;
   image-rendering: pixelated;
+  opacity: 0; /* START AS INVISIBLE */
+  transition: opacity 0.8s ease-in-out; /* FADE IN EFFECT */
 }
+#world.ready { opacity: 1; }
 
-/* Entities */
 .player-container {
   position: absolute; bottom: 34.5%; width: 160px; height: 160px;
   z-index: 100; transform: translateX(-50%); 
@@ -86,7 +87,6 @@ body {
   z-index: 9; transform: translateY(25px);
 }
 
-/* JOYSTICK */
 #joystick-wrapper {
   position: absolute; bottom: 40px; left: 40px; width: 150px; height: 150px;
   z-index: 9000; display: flex; align-items: center; justify-content: center;

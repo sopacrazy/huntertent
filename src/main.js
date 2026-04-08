@@ -6,7 +6,7 @@ class Game {
         this.worldWidth = window.innerWidth; 
         this.playerPos = 780; 
         this.velocity = 0;
-        this.walkSpeed = 7; 
+        this.walkSpeed = 4.5; // SLOWER SPEED (Reduced from 7)
         this.facing = 1;
         this.keys = {};
         this.initialized = false;
@@ -37,9 +37,7 @@ class Game {
         this.calculateBounds();
         this.gameLoop();
         
-        window.addEventListener('resize', () => {
-            this.calculateBounds();
-        });
+        window.addEventListener('resize', () => this.calculateBounds());
     }
 
     calculateBounds() {
@@ -51,12 +49,16 @@ class Game {
             this.worldWidth = h * ar;
             this.els.world.style.width = `${this.worldWidth}px`;
             this.buildObjects();
-            this.initialized = true;
+            
+            // SYNCHRONIZE CAMERA BEFORE REVEALING
+            this.updateCamera(); 
+            
+            // REVEAL WORLD SOFTER
+            setTimeout(() => {
+                this.els.world.classList.add('ready');
+                this.initialized = true;
+            }, 100);
         };
-        
-        // Immediate update for screen rotations
-        const h = window.innerHeight;
-        this.els.world.style.width = `${h * (this.worldWidth/h || 1)}px`;
     }
     
     setupEventListeners() {
@@ -65,14 +67,12 @@ class Game {
 
         const lockOrientation = () => {
             if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock('landscape').catch(() => {
-                    // Fail silently as many browsers block this or need full-screen
-                });
+                screen.orientation.lock('landscape').catch(() => {});
             }
         };
 
         const startJoy = (e) => {
-            lockOrientation(); // Attempt lock on first interaction
+            lockOrientation();
             const touch = e.touches ? e.touches[0] : e;
             const rect = document.getElementById('joystick-base').getBoundingClientRect();
             this.joystick.originX = rect.left + rect.width / 2;
@@ -126,6 +126,14 @@ class Game {
         cabin.style.left = `${cabinX - 130}px`; 
         this.els.objs.appendChild(cabin);
     }
+
+    updateCamera() {
+        const vw = window.innerWidth;
+        let camX = this.playerPos - vw / 2;
+        const maxCamX = Math.max(0, this.worldWidth - vw);
+        camX = Math.max(0, Math.min(camX, maxCamX));
+        this.els.world.style.transform = `translateX(${-camX}px)`;
+    }
     
     gameLoop() {
         if (!this.initialized) {
@@ -153,12 +161,7 @@ class Game {
         if (this.playerPos > this.worldWidth - margin) this.playerPos = this.worldWidth - margin;
         
         this.els.player.style.left = `${this.playerPos}px`;
-
-        const vw = window.innerWidth;
-        let camX = this.playerPos - vw / 2;
-        const maxCamX = Math.max(0, this.worldWidth - vw);
-        camX = Math.max(0, Math.min(camX, maxCamX));
-        this.els.world.style.transform = `translateX(${-camX}px)`;
+        this.updateCamera();
         
         if(this.els.moneyDisplay) this.els.moneyDisplay.innerText = "0";
         requestAnimationFrame(() => this.gameLoop());
