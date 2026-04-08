@@ -1,6 +1,7 @@
 :root {
   --accent-primary: #7c4dff;
   --text-primary: #e0e0e0;
+  --internal-height: 640px; /* Fixed height reference */
 }
 
 * { 
@@ -11,11 +12,12 @@
 }
 
 body {
-  background-color: #000;
+  background-color: #0b0a1a;
   color: var(--text-primary);
   font-family: 'Outfit', sans-serif;
   overflow: hidden;
   height: 100dvh; width: 100vw;
+  display: flex; justify-content: center; align-items: center;
 }
 
 #orientation-blocker {
@@ -32,10 +34,21 @@ body {
 .rotate-icon { font-size: 4rem; margin-bottom: 20px; animation: rotate-anim 2s infinite ease-in-out; }
 @keyframes rotate-anim { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(90deg); } }
 
+/* GAME APP: Fullscreen on mobile, Windowed on Desktop */
 #game-app {
   width: 100vw; height: 100dvh;
   background: #000; position: relative; overflow: hidden;
   display: flex; flex-direction: column;
+}
+
+@media (min-width: 1025px) {
+  #game-app {
+    width: 1100px; /* Elegant Desktop Width */
+    height: var(--internal-height); /* 640px */
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 20px 80px rgba(0,0,0,0.8);
+  }
 }
 
 .game-hud {
@@ -61,8 +74,8 @@ body {
   background-position: left bottom;
   background-repeat: no-repeat;
   image-rendering: pixelated;
-  opacity: 0; /* START AS INVISIBLE */
-  transition: opacity 0.8s ease-in-out; /* FADE IN EFFECT */
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
 }
 #world.ready { opacity: 1; }
 

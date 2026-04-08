@@ -6,7 +6,7 @@ class Game {
         this.worldWidth = window.innerWidth; 
         this.playerPos = 780; 
         this.velocity = 0;
-        this.walkSpeed = 4.5; // SLOWER SPEED (Reduced from 7)
+        this.walkSpeed = 4.5;
         this.facing = 1;
         this.keys = {};
         this.initialized = false;
@@ -19,6 +19,7 @@ class Game {
         };
 
         this.els = {
+            app: document.getElementById('game-app'),
             player: document.getElementById('player'),
             world: document.getElementById('world'),
             ents: document.getElementById('entities-layer'),
@@ -44,16 +45,14 @@ class Game {
         const bgImg = new Image();
         bgImg.src = lugarBg;
         bgImg.onload = () => {
-            const h = window.innerHeight;
+            const h = this.els.app.clientHeight; // Use app height instead of window
             const ar = bgImg.width / bgImg.height;
             this.worldWidth = h * ar;
             this.els.world.style.width = `${this.worldWidth}px`;
             this.buildObjects();
             
-            // SYNCHRONIZE CAMERA BEFORE REVEALING
             this.updateCamera(); 
             
-            // REVEAL WORLD SOFTER
             setTimeout(() => {
                 this.els.world.classList.add('ready');
                 this.initialized = true;
@@ -128,7 +127,7 @@ class Game {
     }
 
     updateCamera() {
-        const vw = window.innerWidth;
+        const vw = this.els.app.clientWidth; // Use container width for camera
         let camX = this.playerPos - vw / 2;
         const maxCamX = Math.max(0, this.worldWidth - vw);
         camX = Math.max(0, Math.min(camX, maxCamX));
