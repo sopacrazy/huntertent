@@ -119,11 +119,21 @@ class Game {
     
     buildObjects() {
         this.els.objs.innerHTML = '';
+        
+        // CABIN
         const cabinX = 780; 
         const cabin = document.createElement('div');
         cabin.className = 'player-cabin';
         cabin.style.left = `${cabinX - 130}px`; 
         this.els.objs.appendChild(cabin);
+
+        // NPC VENDEDOR (At the end of the map)
+        const npcX = this.worldWidth - 500;
+        const npc = document.createElement('div');
+        npc.className = 'npc';
+        npc.style.left = `${npcX}px`;
+        npc.innerHTML = `<div class="npc-idle" style="transform: scaleX(-1)"></div>`; // Facing left
+        this.els.objs.appendChild(npc);
     }
 
     updateCamera() {
