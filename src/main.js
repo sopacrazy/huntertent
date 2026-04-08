@@ -3,14 +3,15 @@ import lugarBg from './assets/world/lugar.png'
 
 class Game {
     constructor() {
+        // Initialize with reasonable defaults to prevent early snaps
         this.worldWidth = window.innerWidth; 
-        this.playerPos = 650; 
+        this.playerPos = 780; 
         this.velocity = 0;
         this.walkSpeed = 7; 
         this.facing = 1;
         this.keys = {};
+        this.initialized = false; // Safety flag
         
-        // Joystick State
         this.joystick = {
             active: false,
             originX: 0, originY: 0,
@@ -49,6 +50,7 @@ class Game {
             this.worldWidth = h * ar;
             this.els.world.style.width = `${this.worldWidth}px`;
             this.buildObjects();
+            this.initialized = true; // Unlock movement
         };
     }
     
@@ -56,14 +58,12 @@ class Game {
         window.addEventListener('keydown', e => { this.keys[e.code] = true; });
         window.addEventListener('keyup', e => this.keys[e.code] = false);
 
-        // JOYSTICK HANDLERS
         const startJoy = (e) => {
             const touch = e.touches ? e.touches[0] : e;
             const rect = document.getElementById('joystick-base').getBoundingClientRect();
             this.joystick.originX = rect.left + rect.width / 2;
             this.joystick.originY = rect.top + rect.height / 2;
             this.joystick.active = true;
-            moveJoy(e);
         };
 
         const moveJoy = (e) => {
@@ -84,7 +84,6 @@ class Game {
             this.joystick.offsetY = dy;
             this.els.joyStick.style.transform = `translate(${dx}px, ${dy}px)`;
             
-            // Map X axis to keys
             const threshold = 15;
             this.keys['KeyD'] = dx > threshold;
             this.keys['KeyA'] = dx < -threshold;
@@ -92,8 +91,6 @@ class Game {
 
         const stopJoy = () => {
             this.joystick.active = false;
-            this.joystick.offsetX = 0;
-            this.joystick.offsetY = 0;
             this.els.joyStick.style.transform = `translate(0px, 0px)`;
             this.keys['KeyD'] = false;
             this.keys['KeyA'] = false;
@@ -102,8 +99,6 @@ class Game {
         this.els.joyWrapper.addEventListener('touchstart', startJoy, { passive: false });
         window.addEventListener('touchmove', moveJoy, { passive: false });
         window.addEventListener('touchend', stopJoy);
-        
-        // Mouse support for testing
         this.els.joyWrapper.addEventListener('mousedown', startJoy);
         window.addEventListener('mousemove', moveJoy);
         window.addEventListener('mouseup', stopJoy);
@@ -119,6 +114,11 @@ class Game {
     }
     
     gameLoop() {
+        if (!this.initialized) {
+            requestAnimationFrame(() => this.gameLoop());
+            return;
+        }
+
         let dir = 0;
         if (this.keys.ArrowRight || this.keys.KeyD) dir += 1;
         if (this.keys.ArrowLeft || this.keys.KeyA) dir -= 1;
@@ -144,6 +144,8 @@ class Game {
         let camX = this.playerPos - vw / 2;
         const maxCamX = Math.max(0, this.worldWidth - vw);
         camX = Math.max(0, Math.min(camX, maxCamX));
+        
+        // Immediate update, no CSS transition delay
         this.els.world.style.transform = `translateX(${-camX}px)`;
         
         if(this.els.moneyDisplay) this.els.moneyDisplay.innerText = "0";
