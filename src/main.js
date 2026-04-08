@@ -3,14 +3,13 @@ import lugarBg from './assets/world/lugar.png'
 
 class Game {
     constructor() {
-        // Initialize with reasonable defaults to prevent early snaps
         this.worldWidth = window.innerWidth; 
         this.playerPos = 780; 
         this.velocity = 0;
         this.walkSpeed = 7; 
         this.facing = 1;
         this.keys = {};
-        this.initialized = false; // Safety flag
+        this.initialized = false;
         
         this.joystick = {
             active: false,
@@ -38,7 +37,9 @@ class Game {
         this.calculateBounds();
         this.gameLoop();
         
-        window.addEventListener('resize', () => this.calculateBounds());
+        window.addEventListener('resize', () => {
+            this.calculateBounds();
+        });
     }
 
     calculateBounds() {
@@ -50,15 +51,28 @@ class Game {
             this.worldWidth = h * ar;
             this.els.world.style.width = `${this.worldWidth}px`;
             this.buildObjects();
-            this.initialized = true; // Unlock movement
+            this.initialized = true;
         };
+        
+        // Immediate update for screen rotations
+        const h = window.innerHeight;
+        this.els.world.style.width = `${h * (this.worldWidth/h || 1)}px`;
     }
     
     setupEventListeners() {
         window.addEventListener('keydown', e => { this.keys[e.code] = true; });
         window.addEventListener('keyup', e => this.keys[e.code] = false);
 
+        const lockOrientation = () => {
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(() => {
+                    // Fail silently as many browsers block this or need full-screen
+                });
+            }
+        };
+
         const startJoy = (e) => {
+            lockOrientation(); // Attempt lock on first interaction
             const touch = e.touches ? e.touches[0] : e;
             const rect = document.getElementById('joystick-base').getBoundingClientRect();
             this.joystick.originX = rect.left + rect.width / 2;
@@ -144,8 +158,6 @@ class Game {
         let camX = this.playerPos - vw / 2;
         const maxCamX = Math.max(0, this.worldWidth - vw);
         camX = Math.max(0, Math.min(camX, maxCamX));
-        
-        // Immediate update, no CSS transition delay
         this.els.world.style.transform = `translateX(${-camX}px)`;
         
         if(this.els.moneyDisplay) this.els.moneyDisplay.innerText = "0";

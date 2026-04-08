@@ -2,13 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>HunterTent</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- ORIENTATION RESTRAINT -->
+    <div id="orientation-blocker">
+        <div class="blocker-content">
+            <div class="rotate-icon">🔄</div>
+            <p>Please rotate your phone to Landscape mode</p>
+        </div>
+    </div>
+
     <div id="game-app">
         <!-- Minimal HUD -->
         <div class="game-hud">
@@ -31,7 +39,7 @@
             </div>
         </div>
 
-        <!-- NEW VIRTUAL JOYSTICK -->
+        <!-- VIRTUAL JOYSTICK -->
         <div id="joystick-wrapper">
             <div id="joystick-base">
                 <div id="joystick-stick"></div>
