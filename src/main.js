@@ -4,9 +4,9 @@ import lugarBg from './assets/world/lugar.png'
 class Game {
     constructor() {
         this.worldWidth = window.innerWidth; 
-        this.playerPos = 200; 
+        this.playerPos = 650; // Respect user's last position
         this.velocity = 0;
-        this.walkSpeed = 5; 
+        this.walkSpeed = 6; // Slightly faster for responsiveness
         this.groundLevel = 34.5;
         this.facing = 1;
         this.entities = []; 
@@ -30,13 +30,16 @@ class Game {
         this.setupEventListeners();
         this.calculateBounds();
         this.gameLoop();
+        
+        // Refresh bounds on resize (rotations)
+        window.addEventListener('resize', () => this.calculateBounds());
     }
 
     calculateBounds() {
         const bgImg = new Image();
         bgImg.src = lugarBg;
         bgImg.onload = () => {
-            const h = this.els.world.clientHeight || window.innerHeight;
+            const h = this.els.world.clientHeight;
             const ar = bgImg.width / bgImg.height;
             this.worldWidth = h * ar;
             this.els.world.style.width = `${this.worldWidth}px`;
@@ -45,13 +48,21 @@ class Game {
     }
     
     setupEventListeners() {
-        window.addEventListener('keydown', e => { this.keys[e.code] = true; if (e.code === 'Space') this.shoot(); if (e.code === 'KeyE') this.interact(); });
+        window.addEventListener('keydown', e => { 
+            this.keys[e.code] = true; 
+        });
         window.addEventListener('keyup', e => this.keys[e.code] = false);
 
         const addTouch = (el, k) => {
             if (!el) return;
-            el.addEventListener('touchstart', (e) => { e.preventDefault(); this.keys[k] = true; });
-            el.addEventListener('touchend', (e) => { e.preventDefault(); this.keys[k] = false; });
+            el.addEventListener('touchstart', (e) => { 
+                e.preventDefault(); 
+                this.keys[k] = true; 
+            }, { passive: false });
+            el.addEventListener('touchend', (e) => { 
+                e.preventDefault(); 
+                this.keys[k] = false; 
+            }, { passive: false });
         };
         addTouch(this.els.btnLeft, 'KeyA');
         addTouch(this.els.btnRight, 'KeyD');
@@ -62,14 +73,13 @@ class Game {
         this.els.ents.innerHTML = '';
         this.els.ents.appendChild(this.els.player);
         
-        // House moved further left (after the entrance)
-        const cabinX = 650; 
+        const cabinX = 650; // CABIN AT 650 AS REQUESTED
         const cabin = document.createElement('div');
         cabin.className = 'player-cabin';
         cabin.style.left = `${cabinX - 130}px`; 
         this.els.objs.appendChild(cabin);
-        this.playerPos = cabinX + 100;
         
+        // Redraw animals based on new width
         for(let i=0; i<8; i++) this.spawnAnimal(Math.random() * (this.worldWidth - 500) + 400);
     }
     
@@ -84,8 +94,8 @@ class Game {
 
     gameLoop() {
         let dir = 0;
-        if (this.keys.ArrowRight || this.keys.KeyD) dir += 1;
-        if (this.keys.ArrowLeft || this.keys.KeyA) dir -= 1;
+        if (this.keys.ArrowRight || this.keys.KeyD || this.keys.right) dir += 1;
+        if (this.keys.ArrowLeft || this.keys.KeyA || this.keys.left) dir -= 1;
         
         if (dir !== 0) {
             this.velocity = dir * this.walkSpeed;
@@ -98,7 +108,7 @@ class Game {
         }
         
         this.playerPos += this.velocity;
-        const margin = 20;
+        const margin = 50;
         if (this.playerPos < margin) this.playerPos = margin;
         if (this.playerPos > this.worldWidth - margin) this.playerPos = this.worldWidth - margin;
         this.els.player.style.left = `${this.playerPos}px`;
@@ -115,12 +125,9 @@ class Game {
         camX = Math.max(0, Math.min(camX, maxCamX));
         this.els.world.style.transform = `translateX(${-camX}px)`;
         
-        this.els.moneyDisplay.innerText = "0";
+        if(this.els.moneyDisplay) this.els.moneyDisplay.innerText = "0";
         requestAnimationFrame(() => this.gameLoop());
     }
-
-    shoot() {}
-    interact() {}
 }
 
 new Game();
