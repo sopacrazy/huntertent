@@ -1,5 +1,6 @@
 import './style.css'
-import lugarBg from './assets/world/lugar.png'
+import lugar1 from './assets/world/lugar.png'
+import lugar2 from './assets/world/lugar2.png'
 
 class Game {
     constructor() {
@@ -11,7 +12,6 @@ class Game {
         this.keys = {};
         this.initialized = false;
         
-        // INTERACTION STATE
         this.npcPos = 0; 
         this.isDialogueOpen = false;
         this.nearNPC = false;
@@ -40,7 +40,6 @@ class Game {
     }
     
     init() {
-        this.els.world.style.backgroundImage = `url(${lugarBg})`;
         this.setupEventListeners();
         this.calculateBounds();
         this.gameLoop();
@@ -48,22 +47,50 @@ class Game {
         window.addEventListener('resize', () => this.calculateBounds());
     }
 
-    calculateBounds() {
-        const bgImg = new Image();
-        bgImg.src = lugarBg;
-        bgImg.onload = () => {
-            const h = this.els.app.clientHeight;
-            const ar = bgImg.width / bgImg.height;
-            this.worldWidth = h * ar;
-            this.els.world.style.width = `${this.worldWidth}px`;
-            this.buildObjects();
-            this.updateCamera(); 
-            
-            setTimeout(() => {
-                this.els.world.classList.add('ready');
-                this.initialized = true;
-            }, 100);
-        };
+    async calculateBounds() {
+        const loadImg = (src) => new Promise(res => {
+            const img = new Image();
+            img.src = src;
+            img.onload = () => res(img);
+        });
+
+        const [img1, img2] = await Promise.all([loadImg(lugar1), loadImg(lugar2)]);
+        const h = this.els.app.clientHeight;
+        const scale = 1.35; 
+
+        // AJUSTE MANUAL DAS IMAGENS (Se houver cortes ou erros de encaixe)
+        // Y: Positivo sobe, Negativo desce | X: Ajusta a distância entre elas
+        const offsetLugar2 = { x: -500, y: 7 }; 
+
+        const ar1 = img1.width / img1.height;
+        const width1 = (h * scale) * ar1;
+
+        const ar2 = img2.width / img2.height;
+        const width2 = (h * scale) * ar2;
+
+        this.worldWidth = width1 + width2 + offsetLugar2.x;
+        this.els.world.style.width = `${this.worldWidth}px`;
+
+        // BUILD TILES
+        this.els.world.innerHTML = `
+            <div id="objects-layer"></div>
+            <div id="entities-layer"></div>
+            <div class="world-tile" style="width: ${width1}px; left: 0; background-image: url(${lugar1})"></div>
+            <div class="world-tile" style="width: ${width2}px; left: ${width1 + offsetLugar2.x}px; top: ${-offsetLugar2.y}px; background-image: url(${lugar2})"></div>
+        `;
+
+        // RE-ASSIGN LAYERS AFTER INNERHTML WIPE
+        this.els.objs = document.getElementById('objects-layer');
+        this.els.ents = document.getElementById('entities-layer');
+        this.els.ents.appendChild(this.els.player);
+
+        this.buildObjects();
+        this.updateCamera(); 
+        
+        setTimeout(() => {
+            this.els.world.classList.add('ready');
+            this.initialized = true;
+        }, 100);
     }
     
     setupEventListeners() {
@@ -73,13 +100,11 @@ class Game {
         });
         window.addEventListener('keyup', e => this.keys[e.code] = false);
 
-        // ACTION BUTTON (Mobile)
         this.els.actionBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             this.tryInteract();
         });
 
-        // DIALOGUE DISMISS
         this.els.dialogueBox.addEventListener('touchstart', () => {
             if (this.isDialogueOpen) this.closeDialogue();
         });
@@ -143,7 +168,7 @@ class Game {
         this.isDialogueOpen = true;
         this.els.dialogueBox.classList.remove('hidden');
         this.velocity = 0;
-        this.keys = {}; // Stop all movement
+        this.keys = {}; 
     }
 
     closeDialogue() {
@@ -153,8 +178,8 @@ class Game {
     
     buildObjects() {
         this.els.objs.innerHTML = '';
-
-        // NPC
+        
+        // NPC VENDEDOR (Moved to the end of the NEW total map)
         this.npcPos = this.worldWidth - 500;
         const npc = document.createElement('div');
         npc.className = 'npc';
@@ -181,7 +206,6 @@ class Game {
             return;
         }
 
-        // PROXIMITY CHECK
         const dist = Math.abs(this.playerPos - this.npcPos);
         const prompt = document.getElementById('npc-prompt');
         if (dist < 150) {

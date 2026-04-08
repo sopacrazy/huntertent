@@ -52,51 +52,61 @@ body {
 }
 
 #world { 
-  position: absolute; top: 0; left: 0; height: 100%; 
-  background-size: auto 100%; background-position: left bottom;
-  background-repeat: no-repeat; image-rendering: pixelated;
-  opacity: 0; transition: opacity 0.8s ease-in-out;
+  position: absolute; 
+  bottom: 0; 
+  left: 0; 
+  height: 135%; /* ZOOM PERSISTED */
+  opacity: 0; 
+  transition: opacity 0.8s ease-in-out;
 }
 #world.ready { opacity: 1; }
 
+.world-tile {
+  position: absolute;
+  top: 0; height: 100%;
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
 /* ENTITIES */
 .player-container, .npc {
-  position: absolute; bottom: 34.5%; width: 160px; height: 160px;
+  position: absolute; 
+  bottom: 32%; 
+  width: 140px; height: 140px;
   z-index: 100; transform: translateX(-50%); 
   pointer-events: none;
 }
 
 .rider, .npc-idle {
-  width: 160px; height: 160px; 
+  width: 140px; height: 140px; 
   image-rendering: pixelated;
   background-repeat: no-repeat;
   background-position: 0 0;
 }
 
-/* FIXING SPRITE LEAK: Use background-size calculated for 160px frames */
 .player-container:not(.moving) .rider { 
   background-image: url('./assets/player/Idle.png'); 
-  background-size: 1280px 160px;
+  background-size: 1120px 140px;
   animation: sprite-idle 1.2s steps(8) infinite; 
 }
 .player-container.moving .rider { 
   background-image: url('./assets/player/Run.png'); 
-  background-size: 1280px 160px;
+  background-size: 1120px 140px; 
   animation: sprite-run 0.6s steps(8) infinite; 
 }
 
-@keyframes sprite-idle { from { background-position: 0px 0px; } to { background-position: -1280px 0px; } }
-@keyframes sprite-run { from { background-position: 0px 0px; } to { background-position: -1280px 0px; } }
+@keyframes sprite-idle { from { background-position: 0px 0px; } to { background-position: -1120px 0px; } }
+@keyframes sprite-run { from { background-position: 0px 0px; } to { background-position: -1120px 0px; } }
 
-/* NPC - 6 FRAMES */
 .npc-idle {
   background-image: url('./assets/npc/Idle.png'); 
-  background-size: 960px 160px; /* 160 * 6 = 960 */
+  background-size: 840px 140px;
   animation: npc-idle-anim 1.2s steps(6) infinite;
 }
-@keyframes npc-idle-anim { from { background-position: 0px 0px; } to { background-position: -960px 0px; } }
+@keyframes npc-idle-anim { from { background-position: 0px 0px; } to { background-position: -840px 0px; } }
 
-/* INTERACTION PROMPT */
 .interact-prompt {
   position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
   background: #fff; color: #000; padding: 4px 10px; border-radius: 4px;
@@ -105,7 +115,6 @@ body {
 }
 @keyframes float { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -10px); } }
 
-/* DIALOGUE SYSTEM */
 #dialogue-box {
   position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
   width: 90%; max-width: 600px; z-index: 9500;
@@ -119,16 +128,8 @@ body {
 #dialogue-text { font-size: 1.1rem; line-height: 1.5; margin-bottom: 15px; }
 .dialogue-footer { font-size: 0.8rem; opacity: 0.6; text-align: right; }
 
-/* MOBILE ACTION BUTTON */
-#action-btn-wrapper {
-  position: absolute; bottom: 40px; right: 40px; z-index: 9000;
-}
-#action-btn {
-  width: 100px; height: 100px; border-radius: 50%;
-  background: rgba(124, 77, 255, 0.3); border: 2px solid var(--accent-primary);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  color: white; pointer-events: auto; animation: pulse-action 2s infinite;
-}
+#action-btn-wrapper { position: absolute; bottom: 40px; right: 40px; z-index: 9000; }
+#action-btn { width: 100px; height: 100px; border-radius: 50%; background: rgba(124, 77, 255, 0.3); border: 2px solid var(--accent-primary); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; pointer-events: auto; animation: pulse-action 2s infinite; }
 .key-hint { font-size: 1.5rem; font-weight: 700; color: #fff; }
 .label { font-size: 0.7rem; letter-spacing: 1px; }
 
