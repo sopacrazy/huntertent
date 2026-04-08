@@ -4,9 +4,9 @@ import lugarBg from './assets/world/lugar.png'
 class Game {
     constructor() {
         this.worldWidth = window.innerWidth; 
-        this.playerPos = 650; // Respect user's last position
+        this.playerPos = 650; 
         this.velocity = 0;
-        this.walkSpeed = 6; // Slightly faster for responsiveness
+        this.walkSpeed = 6; 
         this.groundLevel = 34.5;
         this.facing = 1;
         this.entities = []; 
@@ -31,7 +31,6 @@ class Game {
         this.calculateBounds();
         this.gameLoop();
         
-        // Refresh bounds on resize (rotations)
         window.addEventListener('resize', () => this.calculateBounds());
     }
 
@@ -39,7 +38,7 @@ class Game {
         const bgImg = new Image();
         bgImg.src = lugarBg;
         bgImg.onload = () => {
-            const h = this.els.world.clientHeight;
+            const h = this.els.world.clientHeight || 640;
             const ar = bgImg.width / bgImg.height;
             this.worldWidth = h * ar;
             this.els.world.style.width = `${this.worldWidth}px`;
@@ -48,38 +47,38 @@ class Game {
     }
     
     setupEventListeners() {
-        window.addEventListener('keydown', e => { 
-            this.keys[e.code] = true; 
-        });
+        window.addEventListener('keydown', e => { this.keys[e.code] = true; });
         window.addEventListener('keyup', e => this.keys[e.code] = false);
 
         const addTouch = (el, k) => {
             if (!el) return;
-            el.addEventListener('touchstart', (e) => { 
-                e.preventDefault(); 
-                this.keys[k] = true; 
-            }, { passive: false });
-            el.addEventListener('touchend', (e) => { 
-                e.preventDefault(); 
-                this.keys[k] = false; 
-            }, { passive: false });
+            el.addEventListener('touchstart', (e) => { e.preventDefault(); this.keys[k] = true; }, { passive: false });
+            el.addEventListener('touchend', (e) => { e.preventDefault(); this.keys[k] = false; }, { passive: false });
         };
         addTouch(this.els.btnLeft, 'KeyA');
         addTouch(this.els.btnRight, 'KeyD');
     }
     
     buildObjects() {
+        // Clear objects but keep the player in entities
         this.els.objs.innerHTML = '';
-        this.els.ents.innerHTML = '';
-        this.els.ents.appendChild(this.els.player);
         
-        const cabinX = 650; // CABIN AT 650 AS REQUESTED
+        // Remove only animals, keep player
+        const existingEntities = this.els.ents.querySelectorAll('.entity:not(.player-container)');
+        existingEntities.forEach(e => e.remove());
+        this.entities = [];
+        
+        // RE-APPEND PLAYER AS SAFETY
+        if (this.els.player && !this.els.ents.contains(this.els.player)) {
+            this.els.ents.appendChild(this.els.player);
+        }
+
+        const cabinX = 650; 
         const cabin = document.createElement('div');
         cabin.className = 'player-cabin';
         cabin.style.left = `${cabinX - 130}px`; 
         this.els.objs.appendChild(cabin);
         
-        // Redraw animals based on new width
         for(let i=0; i<8; i++) this.spawnAnimal(Math.random() * (this.worldWidth - 500) + 400);
     }
     
@@ -111,7 +110,10 @@ class Game {
         const margin = 50;
         if (this.playerPos < margin) this.playerPos = margin;
         if (this.playerPos > this.worldWidth - margin) this.playerPos = this.worldWidth - margin;
-        this.els.player.style.left = `${this.playerPos}px`;
+        
+        if (this.els.player) {
+            this.els.player.style.left = `${this.playerPos}px`;
+        }
 
         for (let ent of this.entities) {
             ent.x += ent.vx;
