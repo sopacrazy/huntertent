@@ -4,7 +4,7 @@ import lugarBg from './assets/world/lugar.png'
 class Game {
     constructor() {
         this.worldWidth = window.innerWidth; 
-        this.playerPos = 780; 
+        this.playerPos = 250; 
         this.velocity = 0;
         this.walkSpeed = 4.5;
         this.facing = 1;
