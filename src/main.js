@@ -153,11 +153,6 @@ class Game {
     
     buildObjects() {
         this.els.objs.innerHTML = '';
-        const cabinX = 780; 
-        const cabin = document.createElement('div');
-        cabin.className = 'player-cabin';
-        cabin.style.left = `${cabinX - 130}px`; 
-        this.els.objs.appendChild(cabin);
 
         // NPC
         this.npcPos = this.worldWidth - 500;
