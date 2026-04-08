@@ -6,19 +6,26 @@ class Game {
         this.worldWidth = window.innerWidth; 
         this.playerPos = 650; 
         this.velocity = 0;
-        this.walkSpeed = 6; 
+        this.walkSpeed = 7; 
         this.facing = 1;
-        this.entities = []; 
         this.keys = {};
         
+        // Joystick State
+        this.joystick = {
+            active: false,
+            originX: 0, originY: 0,
+            offsetX: 0, offsetY: 0,
+            maxRadius: 60
+        };
+
         this.els = {
             player: document.getElementById('player'),
             world: document.getElementById('world'),
             ents: document.getElementById('entities-layer'),
             objs: document.getElementById('objects-layer'),
             moneyDisplay: document.getElementById('money-display'),
-            btnLeft: document.getElementById('btn-left'),
-            btnRight: document.getElementById('btn-right')
+            joyWrapper: document.getElementById('joystick-wrapper'),
+            joyStick: document.getElementById('joystick-stick')
         };
         
         this.init();
@@ -37,7 +44,7 @@ class Game {
         const bgImg = new Image();
         bgImg.src = lugarBg;
         bgImg.onload = () => {
-            const h = this.els.world.clientHeight || 640;
+            const h = window.innerHeight;
             const ar = bgImg.width / bgImg.height;
             this.worldWidth = h * ar;
             this.els.world.style.width = `${this.worldWidth}px`;
@@ -49,28 +56,62 @@ class Game {
         window.addEventListener('keydown', e => { this.keys[e.code] = true; });
         window.addEventListener('keyup', e => this.keys[e.code] = false);
 
-        const addTouch = (el, k) => {
-            if (!el) return;
-            el.addEventListener('touchstart', (e) => { e.preventDefault(); this.keys[k] = true; }, { passive: false });
-            el.addEventListener('touchend', (e) => { e.preventDefault(); this.keys[k] = false; }, { passive: false });
+        // JOYSTICK HANDLERS
+        const startJoy = (e) => {
+            const touch = e.touches ? e.touches[0] : e;
+            const rect = document.getElementById('joystick-base').getBoundingClientRect();
+            this.joystick.originX = rect.left + rect.width / 2;
+            this.joystick.originY = rect.top + rect.height / 2;
+            this.joystick.active = true;
+            moveJoy(e);
         };
-        addTouch(this.els.btnLeft, 'KeyA');
-        addTouch(this.els.btnRight, 'KeyD');
+
+        const moveJoy = (e) => {
+            if (!this.joystick.active) return;
+            e.preventDefault();
+            const touch = e.touches ? e.touches[0] : e;
+            let dx = touch.clientX - this.joystick.originX;
+            let dy = touch.clientY - this.joystick.originY;
+            
+            const distance = Math.sqrt(dx*dx + dy*dy);
+            if (distance > this.joystick.maxRadius) {
+                const angle = Math.atan2(dy, dx);
+                dx = Math.cos(angle) * this.joystick.maxRadius;
+                dy = Math.sin(angle) * this.joystick.maxRadius;
+            }
+
+            this.joystick.offsetX = dx;
+            this.joystick.offsetY = dy;
+            this.els.joyStick.style.transform = `translate(${dx}px, ${dy}px)`;
+            
+            // Map X axis to keys
+            const threshold = 15;
+            this.keys['KeyD'] = dx > threshold;
+            this.keys['KeyA'] = dx < -threshold;
+        };
+
+        const stopJoy = () => {
+            this.joystick.active = false;
+            this.joystick.offsetX = 0;
+            this.joystick.offsetY = 0;
+            this.els.joyStick.style.transform = `translate(0px, 0px)`;
+            this.keys['KeyD'] = false;
+            this.keys['KeyA'] = false;
+        };
+
+        this.els.joyWrapper.addEventListener('touchstart', startJoy, { passive: false });
+        window.addEventListener('touchmove', moveJoy, { passive: false });
+        window.addEventListener('touchend', stopJoy);
+        
+        // Mouse support for testing
+        this.els.joyWrapper.addEventListener('mousedown', startJoy);
+        window.addEventListener('mousemove', moveJoy);
+        window.addEventListener('mouseup', stopJoy);
     }
     
     buildObjects() {
         this.els.objs.innerHTML = '';
-        
-        // Remove everything but player
-        const existingEntities = this.els.ents.querySelectorAll('.entity:not(.player-container)');
-        existingEntities.forEach(e => e.remove());
-        this.entities = [];
-        
-        if (this.els.player && !this.els.ents.contains(this.els.player)) {
-            this.els.ents.appendChild(this.els.player);
-        }
-
-        const cabinX = 1070; 
+        const cabinX = 780; 
         const cabin = document.createElement('div');
         cabin.className = 'player-cabin';
         cabin.style.left = `${cabinX - 130}px`; 
@@ -97,9 +138,7 @@ class Game {
         if (this.playerPos < margin) this.playerPos = margin;
         if (this.playerPos > this.worldWidth - margin) this.playerPos = this.worldWidth - margin;
         
-        if (this.els.player) {
-            this.els.player.style.left = `${this.playerPos}px`;
-        }
+        this.els.player.style.left = `${this.playerPos}px`;
 
         const vw = window.innerWidth;
         let camX = this.playerPos - vw / 2;

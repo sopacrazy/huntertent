@@ -1,7 +1,6 @@
 :root {
   --accent-primary: #7c4dff;
   --text-primary: #e0e0e0;
-  --game-height: 640px; 
 }
 
 * { 
@@ -12,46 +11,38 @@
 }
 
 body {
-  background-color: #0b0a1a;
+  background-color: #000;
   color: var(--text-primary);
   font-family: 'Outfit', sans-serif;
   overflow: hidden;
   height: 100dvh; width: 100vw;
-  display: flex; justify-content: center; align-items: center;
 }
 
 #game-app {
-  width: 100%; 
-  height: var(--game-height);
-  position: relative; overflow: hidden;
-  background: #000;
-  box-shadow: 0 0 100px rgba(0,0,0,0.5);
-}
-
-@media (max-width: 1024px) {
-  #game-app {
-    border-top: 1px solid rgba(255,255,255,0.1);
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
+  width: 100vw; height: 100dvh;
+  background: #000; position: relative; overflow: hidden;
+  display: flex; flex-direction: column;
 }
 
 .game-hud {
   position: absolute; top: 0; left: 0; width: 100%;
-  padding: 20px 25px; 
-  display: flex; justify-content: space-between; z-index: 1000;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+  padding: 2.5rem; display: flex; justify-content: space-between; z-index: 5000;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
   pointer-events: none;
 }
 
 .game-title {
-  font-family: 'Playfair Display', serif; font-size: 1.5rem;
+  font-family: 'Playfair Display', serif; font-size: 1.6rem;
   background: linear-gradient(135deg, #fff, #7c4dff);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
 
-.currency { color: #4caf50; font-size: 1.4rem; font-weight: 700; }
+.currency { color: #4caf50; font-size: 1.5rem; font-weight: 700; }
 
-#game-viewport { position: absolute; inset: 0; overflow: hidden; }
+#game-viewport { 
+  flex-grow: 1; position: relative; overflow: hidden; 
+  background: #000;
+}
 
 #world { 
   position: absolute; top: 0; left: 0; height: 100%; 
@@ -59,49 +50,57 @@ body {
   background-position: left bottom;
   background-repeat: no-repeat;
   image-rendering: pixelated;
-  transition: transform 0.05s linear;
 }
 
-/* PLAYER SCALED UP TO 160PX */
+/* PLAYER & CABIN ALIGNMENT */
 .player-container {
-  position: absolute; 
-  bottom: 220px; 
-  width: 160px; height: 160px; /* Increased size */
+  position: absolute; bottom: 34.5%; width: 160px; height: 160px;
   z-index: 100; transform: translateX(-50%); 
 }
 
 .rider {
-  width: 160px; height: 160px; 
-  background-size: 1280px 160px; /* SYNCED: 160px * 8 frames = 1280px */
-  background-repeat: no-repeat; 
-  image-rendering: pixelated;
+  width: 160px; height: 160px; background-size: 1280px 160px;
+  background-repeat: no-repeat; image-rendering: pixelated;
 }
 
 .player-container:not(.moving) .rider { background-image: url('./assets/player/Idle.png'); animation: sprite-cycle 1.2s steps(8) infinite; }
 .player-container.moving .rider { background-image: url('./assets/player/Run.png'); animation: sprite-cycle 0.6s steps(8) infinite; }
 @keyframes sprite-cycle { from { background-position: 0px 0px; } to { background-position: -1280px 0px; } }
 
-/* CABIN FIXED IN PIXELS */
 .player-cabin {
-  position: absolute; 
-  bottom: 220px; 
-  width: 260px; height: 190px; 
+  position: absolute; bottom: 34.5%; width: 260px; height: 190px; 
   background-image: url('./assets/world/cabana.png');
   background-size: contain; background-repeat: no-repeat;
-  z-index: 9;
+  z-index: 9; transform: translateY(25px);
 }
 
-/* MOBILE CONTROLS ALWAYS VISIBLE */
-#mobile-controls {
-  position: absolute; bottom: 30px; left: 30px; z-index: 2000; pointer-events: none;
+/* VIRTUAL JOYSTICK CSS */
+#joystick-wrapper {
+  position: absolute; 
+  bottom: 40px; left: 40px; 
+  width: 150px; height: 150px;
+  z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: auto;
 }
-.dpad { display: flex; gap: 30px; pointer-events: auto; }
-.ctrl-btn {
-  width: 80px; height: 80px; border-radius: 50%; opacity: 0.25;
-  border: 1px solid rgba(255,255,255,0.4); background: rgba(0,0,0,0.3);
-  color: white; font-size: 2rem; display: flex; align-items: center; justify-content: center;
-}
-.ctrl-btn:active { opacity: 0.8; background: var(--accent-primary); transform: scale(1.1); }
 
-.projectile { position: absolute; width: 15px; height: 4px; background: #fff; box-shadow: 0 0 10px var(--accent-primary); border-radius: 2px; z-index: 200; }
-.notification { position: absolute; top: 100px; right: 20px; background: rgba(0,0,0,0.9); border-left: 4px solid var(--accent-primary); padding: 12px 24px; border-radius: 6px; z-index: 3000; font-size: 0.9rem; }
+#joystick-base {
+  width: 120px; height: 120px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(5px);
+  position: relative;
+}
+
+#joystick-stick {
+  width: 50px; height: 50px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  transition: transform 0.05s linear;
+}
+
+.hidden { display: none !important; }

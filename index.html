@@ -29,24 +29,17 @@
                     </div>
                 </div>
             </div>
-            <div id="game-toast"></div>
         </div>
 
-        <!-- Ghost Mobile Controls -->
-        <div id="mobile-controls" class="mobile-only">
-            <div class="dpad">
-                <button id="btn-left" class="ctrl-btn">◀</button>
-                <button id="btn-right" class="ctrl-btn">▶</button>
+        <!-- NEW VIRTUAL JOYSTICK -->
+        <div id="joystick-wrapper">
+            <div id="joystick-base">
+                <div id="joystick-stick"></div>
             </div>
         </div>
 
-        <!-- Store Modal (Fully hidden UI) -->
-        <div id="store-modal" class="modal hidden">
-            <div class="modal-content">
-                <div id="store-items" class="store-grid"></div>
-                <button class="close-btn">BACK</button>
-            </div>
-        </div>
+        <!-- Hidden Components -->
+        <div id="store-modal" class="hidden"></div>
     </div>
     <script type="module" src="/src/main.js"></script>
 </body>
